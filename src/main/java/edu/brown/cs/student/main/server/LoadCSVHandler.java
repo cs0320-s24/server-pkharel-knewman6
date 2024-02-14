@@ -5,13 +5,10 @@ import spark.Response;
 import spark.Route;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 
 public class LoadCSVHandler implements Route {
-    private String loadedCSVContent;
 
     @Override
     public Object handle(Request request, Response response) throws Exception {
