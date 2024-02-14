@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.testng.Assert.assertFalse;
 
 import edu.brown.cs.student.main.FactoryFailureException;
-import edu.brown.cs.student.main.RowCreators.StandardObjectCreator;
-import edu.brown.cs.student.main.User1Files.Search;
+import edu.brown.cs.student.main.parser.RowCreators.StandardObjectCreator;
+import edu.brown.cs.student.main.parser.Search;
 import edu.brown.cs.student.main.parser.CsvParser;
 import java.io.*;
 import java.util.List;

@@ -1,6 +1,6 @@
 package edu.brown.cs.student.main;
 
-import edu.brown.cs.student.main.User1Files.Search;
+import edu.brown.cs.student.main.parser.Search;
 import java.io.IOException;
 import java.util.Scanner;
 

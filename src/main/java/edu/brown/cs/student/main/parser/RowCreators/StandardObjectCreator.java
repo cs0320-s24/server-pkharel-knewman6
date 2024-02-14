@@ -1,4 +1,4 @@
-package edu.brown.cs.student.main.RowCreators;
+package edu.brown.cs.student.main.parser.RowCreators;
 
 import edu.brown.cs.student.main.FactoryFailureException;
 import java.util.ArrayList;
