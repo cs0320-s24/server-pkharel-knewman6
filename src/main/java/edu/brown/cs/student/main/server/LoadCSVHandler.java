@@ -18,7 +18,6 @@ public class LoadCSVHandler implements Route {
         String filePath = request.queryParams("file_path");
         Map<String, Object> responseMap = new HashMap<>();
 
-        // Check if file path is provided
         if (filePath == null || filePath.isEmpty()) {
             response.status(400);
             responseMap.put("result", "error");
@@ -34,17 +33,10 @@ public class LoadCSVHandler implements Route {
             return responseMap;
         }
 
-        try {
-            this.loadedCSVContent = new String(Files.readAllBytes(Paths.get(filePath)));
-            response.status(200);
-            responseMap.put("result", "success");
-            responseMap.put("message", "CSV at '" + filePath + "' loaded successfully");
-        } catch (Exception e) {
-            response.status(500);
-            responseMap.put("result", "error");
-            responseMap.put("message", "Error loading CSV: " + e.getMessage());
-            e.printStackTrace();
-        }
+        CSVHolder.getInstance().loadCSV(filePath);
+        response.status(200); // HTTP 200 OK
+        responseMap.put("result", "success");
+        responseMap.put("message", "CSV file path loaded successfully");
 
         return responseMap;
     }
