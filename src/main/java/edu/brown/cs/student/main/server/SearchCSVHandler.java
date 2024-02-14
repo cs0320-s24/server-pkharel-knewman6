@@ -12,44 +12,51 @@ import java.util.Map;
 
 public class SearchCSVHandler implements Route {
 
+    private boolean convertToBoolean(String input){
+        if(input.equals("true")){
+            return true;
+        }
+        else if(input.equals("false")){
+            return false;
+        }
+        else{
+            return false;
+        }
+    }
     @Override
     public Object handle(Request request, Response response) {
         response.type("application/json");
         Map<String, Object> responseMap = new HashMap<>();
         String searchQuery = request.queryParams("query");
         String columnID = request.queryParams("column");
-
+        String hasHeaders = request.queryParams("headers"); //defaults to false if the input is null or not a boolean value
+        Boolean headers = this.convertToBoolean(hasHeaders);
         try {
             String csvFilePath = CSVHolder.getInstance().getCSVFilePath();
 
             if (csvFilePath != null && !csvFilePath.isEmpty()) {
-                Search search = new Search(csvFilePath, searchQuery, columnID, true);
+                Search search = new Search(csvFilePath, searchQuery, columnID, headers);
                 List<List<String>> searchResults = search.searchFor();
 
-                // Add search results to the response map
                 responseMap.put("result", "success");
                 responseMap.put("message", "Search operation completed.");
                 responseMap.put("searchResults", searchResults);
-                response.status(200); // HTTP 200 OK
+                response.status(200);
             } else {
-                // No CSV file is loaded, return an error
                 responseMap.put("result", "error");
                 responseMap.put("message", "No CSV file is currently loaded.");
-                response.status(400); // HTTP 400 Bad Request
+                response.status(400);
             }
         } catch (IllegalStateException | FactoryFailureException e) {
-            // Handle CSVHolder errors and FactoryFailureException
             responseMap.put("result", "error");
             responseMap.put("message", e.getMessage());
-            response.status(500); // HTTP 500 Internal Server Error
+            response.status(500);
         } catch (Exception e) {
-            // Handle other exceptions
             responseMap.put("result", "error");
             responseMap.put("message", "An error occurred while processing the search.");
-            response.status(500); // HTTP 500 Internal Server Error
+            response.status(500);
         }
 
-        // Convert responseMap to JSON
         return responseMap;
     }
 }
