@@ -6,6 +6,7 @@ import edu.brown.cs.student.main.parser.RowCreators.StandardObjectCreator;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.rmi.NoSuchObjectException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +47,7 @@ public class Search {
      * @return the index of the column if found, or -1 otherwise.
      * @throws IllegalArgumentException if the column identifier is invalid.
      */
-    private int determineColumnIndex(List<List<String>> data, String columnID, boolean hasHeaders) {
+    private int determineColumnIndex(List<List<String>> data, String columnID, boolean hasHeaders) throws IllegalArgumentException{
         int columnIndex = -1;
         if (columnID != null && !columnID.isEmpty()) {
             try {
@@ -60,10 +61,10 @@ public class Search {
                     columnID.toLowerCase();
                     columnIndex = headers.indexOf(columnID);
                     if (columnIndex == -1) { // column index remains unchanged, meaning it is not found
-                        System.err.println("Error: The specified column name does not exist.");
+                        throw new IllegalArgumentException("Column name does not exist");
                     }
                 } else { // data does not have headers or the set is empty
-                    System.err.println("Error: Invalid column identifier.");
+                    throw new IllegalArgumentException("Invalid column identifier.");
                 }
             }
         }
@@ -80,7 +81,7 @@ public class Search {
      * @return true if matches are found, false otherwise, (used to tailor response)
      */
     private List<List<String>> getMatchingRows(
-            List<List<String>> data, int columnIndex, boolean columnSpecified) {
+            List<List<String>> data, int columnIndex, boolean columnSpecified) throws IllegalArgumentException, NoSuchObjectException{
 
         List<List<String>> matchingRows = new ArrayList<>();
         for (List<String> eachRow : data) {
@@ -90,11 +91,9 @@ public class Search {
                         matchingRows.add(eachRow);
                     }
                 } else if (columnIndex >= eachRow.size()) {
-                    System.err.println("Error: Specified column value was too large");
-                    break;
+                    throw new NoSuchObjectException("Specified column value was too large");
                 } else {
-                    System.err.println("Error: Specified column value was too small");
-                    break;
+                    throw new NoSuchObjectException("Specified column value was too small");
                 }
             } else {
                 for (String field : eachRow) {
@@ -112,11 +111,11 @@ public class Search {
      * uses helper methods to loop through the parameter CSV, while also checking file name security
      * and responding to errors called from opening a file incorrectly
      */
-    public List<List<String>> searchFor() throws IOException, FactoryFailureException {
+    public List<List<String>> searchFor() throws IOException, FactoryFailureException,
+            IllegalArgumentException, NoSuchObjectException{
       List<List<String>> resultList = new ArrayList<>();
         if (!this.filename.contains("data/")) {
-            System.err.println("Error: Invalid file location");
-            return resultList;
+            throw new IllegalArgumentException("Invalid file location");
         }
         try (FileReader fileReader = new FileReader(this.filename)) {
             CsvParser<List<String>> parser =
@@ -128,24 +127,25 @@ public class Search {
             try {
                 columnIndex = determineColumnIndex(parsedData, columnID, this.hasHeaders);
             } catch (IllegalArgumentException e) {
-                System.err.println(e.getMessage());
-                return resultList;
+                throw new IllegalArgumentException(e);
             }
             resultList = getMatchingRows(parsedData, columnIndex, columnSpecified);
 
             if (resultList.isEmpty()) {
                 if (columnSpecified) {
-                    System.out.println("No matches were found in the specified columns");
+                    throw new NoSuchObjectException("No matches were found in the specified columns");
                 } else {
-                    System.out.println("No matches were found");
+                    throw new NoSuchObjectException("No matches were found");
                 }
             }
         } catch (FileNotFoundException e) {
-            System.err.println("Error: CSV file not found.");
-        } catch (IOException e) {
-            System.err.println("Error: An I/O error occurred while reading the file.");
+            throw new FileNotFoundException("CSV file not found.");
+        } catch (NoSuchObjectException e) {
+            throw new NoSuchObjectException(e.getMessage());
         } catch (FactoryFailureException e) {
-            System.err.println("Error: Failed to create object from row data.");
+            throw new FactoryFailureException("Failed to create object from row data", null);
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException(e.getMessage());
         }
         return resultList;
     }

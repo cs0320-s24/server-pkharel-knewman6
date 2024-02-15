@@ -40,23 +40,18 @@ public class SearchCSVHandler implements Route {
 
                 responseMap.put("result", "success");
                 responseMap.put("message", "Search operation completed.");
-                responseMap.put("searchResults", searchResults);
+                responseMap.put("searchResults", "\n"+searchResults);
                 response.status(200);
             } else {
                 responseMap.put("result", "error");
-                responseMap.put("message", "No CSV file is currently loaded.");
+                responseMap.put("message", "No CSV file is currently loaded!");
                 response.status(400);
             }
-        } catch (IllegalStateException | FactoryFailureException e) {
+        } catch (Exception e) {
             responseMap.put("result", "error");
             responseMap.put("message", e.getMessage());
             response.status(500);
-        } catch (Exception e) {
-            responseMap.put("result", "error");
-            responseMap.put("message", "An error occurred while processing the search.");
-            response.status(500);
         }
-
         return responseMap;
     }
 }

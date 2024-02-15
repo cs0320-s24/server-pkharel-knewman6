@@ -21,7 +21,7 @@ public class CSVHolder {
 
     public String getCSVFilePath() throws IllegalStateException {
         if (!isCSVLoaded) {
-            throw new IllegalStateException("No CSV file is currently loaded.");
+            throw new IllegalStateException("No CSV file is currently loaded");
         }
         return csvFilePath;
     }

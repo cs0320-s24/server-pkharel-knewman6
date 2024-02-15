@@ -8,37 +8,49 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ViewCSVHandler implements Route {
 
     @Override
-    public Object handle(Request request, Response response) throws IOException {
-        List<List<String>> jsonData = new ArrayList<>();
+    public Object handle(Request request, Response response) {
+        response.type("application/json");
+        Map<String, Object> responseMap = new HashMap<>();
 
-        // Get CSV file path from CSVHolder
-        CSVHolder csvHolder = CSVHolder.getInstance();
-        String csvFilePath = csvHolder.getCSVFilePath();
+        try {
+            CSVHolder csvHolder = CSVHolder.getInstance();
+            String csvFilePath = csvHolder.getCSVFilePath();
 
-        // Check if a CSV file is loaded
-        if (csvFilePath == null || csvFilePath.isEmpty()) {
-            return "{\"result\": \"error_bad_request\", \"message\": \"No CSV file loaded\"}";
-        }
+            if (csvFilePath == null || csvFilePath.isEmpty()) {
+                responseMap.put("result", "error");
+                responseMap.put("message", "No CSV file is currently loaded!");
+                response.status(400); // HTTP 400 Bad Request
+            } else {
+                List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
+                List<List<String>> jsonData = new ArrayList<>();
 
-        // Read contents of the CSV file
-        List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
+                for (String line : csvLines) {
+                    List<String> row = new ArrayList<>();
+                    String[] cells = line.split(",");
+                    for (String cell : cells) {
+                        row.add(cell.trim());
+                    }
+                    jsonData.add(row);
+                }
 
-        // Prepare JSON response
-        for (String line : csvLines) {
-            List<String> row = new ArrayList<>();
-            String[] cells = line.split(",");
-            for (String cell : cells) {
-                row.add(cell.trim()); // Trim to remove leading/trailing whitespace
+                responseMap.put("result", "success");
+                responseMap.put("message", "CSV content loaded successfully.");
+                responseMap.put("data", jsonData);
+                response.status(200);
             }
-            jsonData.add(row);
+        } catch (IOException | IllegalStateException e) {
+            responseMap.put("result", "error");
+            responseMap.put("message", e.getMessage());
+            response.status(500);
         }
 
-        // Serialize response to JSON and return
-        return jsonData;
+        return responseMap;
     }
 }

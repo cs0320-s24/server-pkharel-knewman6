@@ -29,17 +29,13 @@ public class BroadbandHandler implements Route {
         }
 
         try {
-            // Sends a request to the Census API and receives JSON back
             String broadbandJson = this.sendRequest(state, county);
-            // Here you would typically parse the JSON into a domain object
-            // For simplicity, we're directly adding the JSON response to the response map
             responseMap.put("result", "success");
             responseMap.put("data", broadbandJson);
             response.status(200);
         } catch (Exception e) {
-            e.printStackTrace();
             responseMap.put("result", "error");
-            responseMap.put("message", "An error occurred while processing the broadband data retrieval.");
+            responseMap.put("message", e.getMessage());
             response.status(500);
         }
 
@@ -48,19 +44,15 @@ public class BroadbandHandler implements Route {
 
     private String sendRequest(String state, String county) throws URISyntaxException, IOException, InterruptedException {
         String baseUri = "https://api.census.gov/data/2010/dec/sf1";
-        // Construct the query parameter for 'get' which includes the variables you want from the API
-        String queryParam = "?get=PCT012A015&for=county:" + county + "&in=state:" + state;
+        String queryParam = "?get=NAME&for=county:" + county + "&in=state:" + state;
 
-        // Build the full URI including the base URI and the query parameters
         URI uri = new URI(baseUri + queryParam);
 
-        // Build the HTTP request
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
                 .GET()
                 .build();
 
-        // Send the request using HttpClient
         HttpResponse<String> response = HttpClient.newBuilder()
                 .build()
                 .send(request, HttpResponse.BodyHandlers.ofString());
