@@ -10,8 +10,8 @@ public class BroadbandCache {
 
     static {
         cache = CacheBuilder.newBuilder()
-                .expireAfterWrite(1, TimeUnit.HOURS) // Example: expire after 1 hour
-                .maximumSize(100) // Example: limit the cache size to 100 entries
+                .expireAfterWrite(10, TimeUnit.MINUTES)
+                .maximumSize(10)
                 .build();
     }
 

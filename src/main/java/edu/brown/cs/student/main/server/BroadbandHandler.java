@@ -25,7 +25,6 @@ public class BroadbandHandler implements Route {
             initializeStateCodes();
         } catch (IOException | InterruptedException | URISyntaxException e) {
             e.printStackTrace();
-            // Handle the exceptions appropriately, perhaps logging them or setting an application error state
         }
     }
 
@@ -66,10 +65,10 @@ public class BroadbandHandler implements Route {
         try {
             String stateCode = getStateCode(stateName);
             String countyCode = getCountyCode(stateCode, countyName);
-            String broadbandJson = BroadbandCache.getData(stateCode, countyCode); // Check cache first
+            String broadbandJson = BroadbandCache.getData(stateCode, countyCode);
             if (broadbandJson == null) {
                 broadbandJson = fetchDataFromApi(stateCode, countyCode);
-                BroadbandCache.putData(stateCode, countyCode, broadbandJson); // Cache the fetched data
+                BroadbandCache.putData(stateCode, countyCode, broadbandJson);
             }
             responseMap.put("result", "success");
             responseMap.put("data", broadbandJson);
@@ -93,7 +92,6 @@ public class BroadbandHandler implements Route {
 
 
     private String getCountyCode(String stateCode, String countyName) throws IOException, InterruptedException, URISyntaxException, IllegalArgumentException {
-        // Construct the URI for the API call to get all counties in a state
         if(countyName.equals("*")){
             return "*";
         }
@@ -102,24 +100,16 @@ public class BroadbandHandler implements Route {
                 .uri(new URI(countyDirectoryUri))
                 .GET()
                 .build();
-
-        // Send the request to the API
         HttpResponse<String> countyResponse = httpClient.send(countyRequest, HttpResponse.BodyHandlers.ofString());
 
-        // The response body should contain the list of counties in the specified state
         String responseBody = countyResponse.body();
-
-        // Pattern to match the county information in the JSON response
-        // Assuming county names are unique within each state
         Pattern pattern = Pattern.compile("\\[\"(" + countyName + ", .*?)\",\"" + stateCode + "\",\"(\\d{3})\"\\]");
         Matcher matcher = pattern.matcher(responseBody);
 
-        // Iterate over all matches and find the one that corresponds to the countyName
         while (matcher.find()) {
-            // Check if the county name matches the provided countyName
             String matchedCounty = matcher.group(1).split(",")[0].trim();
             if (matchedCounty.equalsIgnoreCase(countyName)) {
-                return matcher.group(2); // Return the county code
+                return matcher.group(2);
             }
         }
 
