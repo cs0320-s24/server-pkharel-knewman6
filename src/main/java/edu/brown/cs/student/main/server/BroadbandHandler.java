@@ -1,5 +1,9 @@
 package edu.brown.cs.student.main.server;
 
+import spark.Request;
+import spark.Response;
+import spark.Route;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,9 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 
 public class BroadbandHandler implements Route {
 
@@ -65,7 +66,11 @@ public class BroadbandHandler implements Route {
         try {
             String stateCode = getStateCode(stateName);
             String countyCode = getCountyCode(stateCode, countyName);
-            String broadbandJson = this.sendRequest(stateCode, countyCode);
+            String broadbandJson = BroadbandCache.getData(stateCode, countyCode); // Check cache first
+            if (broadbandJson == null) {
+                broadbandJson = fetchDataFromApi(stateCode, countyCode);
+                BroadbandCache.putData(stateCode, countyCode, broadbandJson); // Cache the fetched data
+            }
             responseMap.put("result", "success");
             responseMap.put("data", broadbandJson);
             response.status(200);
@@ -121,12 +126,9 @@ public class BroadbandHandler implements Route {
         throw new IllegalArgumentException("County name not found: " + countyName);
     }
 
-
-
-    private String sendRequest(String stateCode, String county) throws URISyntaxException, IOException, InterruptedException {
+    private String fetchDataFromApi(String stateCode, String county) throws URISyntaxException, IOException, InterruptedException {
         String baseUri = "https://api.census.gov/data/2021/acs/acs1/subject/variables";
-        String queryParam = "?get=NAME,S2802_C03_022E&for=county:" + county + "&in=state:" + stateCode + "&key=b8d35dc232232cb505ae17986d728e37d98281ad";
-        //https://api.census.gov/data/2021/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:*&in=state:06
+        String queryParam = "?get=NAME,S2802_C03_022E&for=county:" + county + "&in=state:" + stateCode;
         URI uri = new URI(baseUri + queryParam);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)
@@ -134,8 +136,7 @@ public class BroadbandHandler implements Route {
                 .build();
 
         HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
-
-        // Return the body of the response
+        System.out.println("FAIL");
         return response.body();
     }
 }
