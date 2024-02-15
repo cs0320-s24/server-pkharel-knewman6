@@ -1,5 +1,9 @@
 package edu.brown.cs.student.main.server;
 
+import spark.Request;
+import spark.Response;
+import spark.Route;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -10,9 +14,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import spark.Request;
-import spark.Response;
-import spark.Route;
 
 public class BroadbandHandler implements Route {
 
@@ -34,7 +35,11 @@ public class BroadbandHandler implements Route {
 
         try {
             String stateCode = getStateCode(stateName);
-            String broadbandJson = this.sendRequest(stateCode, county);
+            String broadbandJson = BroadbandCache.getData(stateCode, county); // Check cache first
+            if (broadbandJson == null) {
+                broadbandJson = fetchDataFromApi(stateCode, county);
+                BroadbandCache.putData(stateCode, county, broadbandJson); // Cache the fetched data
+            }
             responseMap.put("result", "success");
             responseMap.put("data", broadbandJson);
             response.status(200);
@@ -47,7 +52,7 @@ public class BroadbandHandler implements Route {
         return responseMap;
     }
 
-    private String getStateCode(String stateName) throws IOException, InterruptedException, URISyntaxException, IllegalArgumentException {
+    private String getStateCode(String stateName) throws IOException, InterruptedException, URISyntaxException {
         String stateDirectoryUri = "https://api.census.gov/data/2010/dec/sf1?get=NAME&for=state:*";
         HttpRequest stateRequest = HttpRequest.newBuilder()
                 .uri(new URI(stateDirectoryUri))
@@ -67,10 +72,9 @@ public class BroadbandHandler implements Route {
         throw new IllegalArgumentException("State name not found: " + stateName);
     }
 
-    private String sendRequest(String stateCode, String county) throws URISyntaxException, IOException, InterruptedException {
+    private String fetchDataFromApi(String stateCode, String county) throws URISyntaxException, IOException, InterruptedException {
         String baseUri = "https://api.census.gov/data/2021/acs/acs1/subject/variables";
         String queryParam = "?get=NAME,S2802_C03_022E&for=county:" + county + "&in=state:" + stateCode;
-        //https://api.census.gov/data/2021/acs/acs1/subject/variables?get=NAME,S2802_C03_022E&for=county:*&in=state:06
         URI uri = new URI(baseUri + queryParam);
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(uri)

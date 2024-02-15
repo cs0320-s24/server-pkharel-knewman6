@@ -1,6 +1,5 @@
 package edu.brown.cs.student.main.server;
 
-import edu.brown.cs.student.main.FactoryFailureException;
 import edu.brown.cs.student.main.parser.Search;
 import spark.Request;
 import spark.Response;
