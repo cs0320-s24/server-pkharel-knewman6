@@ -249,7 +249,7 @@
         <artifactId>exec-maven-plugin</artifactId>
         <version>1.4.0</version>
         <configuration>
-          <mainClass>edu.brown.cs.student.main.Main</mainClass>
+          <mainClass>edu.brown.cs.student.main.parser.Main</mainClass>
           <arguments/>
         </configuration>
         <executions>

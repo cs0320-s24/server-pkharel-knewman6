@@ -1,6 +1,6 @@
 package edu.brown.cs.student.main.parser.RowCreators;
 
-import edu.brown.cs.student.main.FactoryFailureException;
+import edu.brown.cs.student.main.parser.FactoryFailureException;
 import java.util.List;
 
 /**

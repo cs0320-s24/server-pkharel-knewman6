@@ -26,7 +26,7 @@ public class ViewCSVHandler implements Route {
             if (csvFilePath == null || csvFilePath.isEmpty()) {
                 responseMap.put("result", "error");
                 responseMap.put("message", "No CSV file is currently loaded!");
-                response.status(400); // HTTP 400 Bad Request
+                response.status(400);
             } else {
                 List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
                 List<List<String>> jsonData = new ArrayList<>();
