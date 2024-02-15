@@ -4,7 +4,6 @@ import spark.Spark;
 import static spark.Spark.after;
 
 public class Server {
-
     public static void main(String[] args) {
         int port = 3232;
         Spark.port(port);
@@ -15,7 +14,6 @@ public class Server {
                     response.header("Access-Control-Allow-Methods", "GET");
                 });
 
-        // TODO: Implement BroadbandHandler, ViewCSVHandler according to the user story
         Spark.get("/loadcsv", new LoadCSVHandler());
         Spark.get("/viewcsv", new ViewCSVHandler());
         Spark.get("/searchcsv", new SearchCSVHandler());
