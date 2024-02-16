@@ -46,7 +46,8 @@
     <dependency>
       <groupId>com.google.guava</groupId>
       <artifactId>guava</artifactId>
-      <version>31.1-jre</version> <!-- Adjust version as needed -->
+      <version>31.1-jre</version>
+      <!-- Adjust version as needed -->
     </dependency>
 
     <!--
@@ -75,6 +76,17 @@
       <scope>compile</scope>
     </dependency>
 
+    <dependency>
+      <groupId>com.squareup.moshi</groupId>
+      <artifactId>moshi</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+    <dependency>
+      <groupId>com.squareup.moshi</groupId>
+      <artifactId>moshi-adapters</artifactId>
+      <version>1.13.0</version>
+    </dependency>
+
     <!--
            JUnit is a unit testing library for Java.
     -->
@@ -82,7 +94,7 @@
       <groupId>org.junit.jupiter</groupId>
       <artifactId>junit-jupiter-engine</artifactId>
       <version>5.4.0</version>
-      <scope>test</scope>
+      <scope>Test</scope>
     </dependency>
 
   </dependencies>

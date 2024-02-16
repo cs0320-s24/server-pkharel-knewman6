@@ -1,59 +1,96 @@
 package edu.brown.cs.student.main.server.Endpoints;
 
+import com.squareup.moshi.JsonAdapter;
+import com.squareup.moshi.Moshi;
+import com.squareup.moshi.Types;
 import edu.brown.cs.student.main.server.CSVHolder;
-import spark.Request;
-import spark.Response;
-import spark.Route;
-
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import spark.Request;
+import spark.Response;
+import spark.Route;
 
 public class ViewCSVHandler implements Route {
 
-    @Override
-    public Object handle(Request request, Response response) {
-        response.type("application/json");
-        Map<String, Object> responseMap = new HashMap<>();
+  @Override
+  public Object handle(Request request, Response response) {
+    response.type("application/json");
+    Map<String, Object> responseMap = new HashMap<>();
 
-        try {
-            CSVHolder csvHolder = CSVHolder.getInstance();
-            String csvFilePath = csvHolder.getCSVFilePath();
+    try {
+      CSVHolder csvHolder = CSVHolder.getInstance();
+      String csvFilePath = csvHolder.getCSVFilePath();
 
-            if (csvFilePath == null || csvFilePath.isEmpty()) {
-                responseMap.put("result", "error");
-                responseMap.put("message", "No CSV file is currently loaded!");
-                response.status(400);
-            } else {
-                List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
-                List<List<String>> jsonData = new ArrayList<>();
+      if (csvFilePath == null || csvFilePath.isEmpty()) {
+        responseMap.put("result", "error");
+        responseMap.put("message", "No CSV file is currently loaded!");
+        response.status(400);
+        return new CSVErrorResponse(responseMap).serialize();
+      } else {
+        Moshi moshi = new Moshi.Builder().build();
+        Type listOfListsType = Types.newParameterizedType(List.class, List.class, String.class);
+        JsonAdapter<List<List<String>>> listJsonAdapter = moshi.adapter(listOfListsType);
 
-                for (String line : csvLines) {
-                    List<String> row = new ArrayList<>();
-                    String[] cells = line.split(",");
-                    for (String cell : cells) {
-                        row.add(cell.trim());
-                    }
-                    jsonData.add(row);
-                }
-
-                responseMap.put("result", "success");
-                responseMap.put("message", "CSV content loaded successfully.");
-                responseMap.put("data", jsonData);
-                response.status(200);
-            }
-        } catch (IOException | IllegalStateException e) {
-            responseMap.put("result", "error");
-            responseMap.put("message", e.getMessage());
-            response.status(500);
+        List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
+        List<List<String>> jsonData = new ArrayList<>();
+        for (String line : csvLines) {
+          List<String> row = new ArrayList<>();
+          String[] cells = line.split(",");
+          for (String cell : cells) {
+            row.add(cell.trim());
+          }
+          jsonData.add(row);
         }
 
-        return responseMap;
+        String jsonDataString = listJsonAdapter.toJson(jsonData); // Serialize the list of lists into a JSON string
+
+        responseMap.put("result", "success");
+        responseMap.put("message", "CSV content loaded successfully.");
+        responseMap.put("data", jsonDataString); // Set the serialized string as the value for "data"
+        response.status(200);
+        return new CSVSuccessResponse(responseMap).serialize();
+      }
+    } catch (IOException | IllegalStateException e) {
+      responseMap.put("result", "error");
+      responseMap.put("message", e.getMessage());
+      response.status(500);
+      return new CSVErrorResponse(responseMap).serialize();
+    }
+  }
+
+  /** Response object for successful CSV content loading */
+  public record CSVSuccessResponse(String response_type, Map<String, Object> responseMap) {
+    public CSVSuccessResponse(Map<String, Object> responseMap) {
+      this("success", responseMap);
     }
 
+    String serialize() {
+      try {
+        Moshi moshi = new Moshi.Builder().build();
+        JsonAdapter<CSVSuccessResponse> adapter = moshi.adapter(CSVSuccessResponse.class);
+        return adapter.toJson(this);
+      } catch (Exception e) {
+        e.printStackTrace();
+        throw e;
+      }
+    }
+  }
 
+  /** Response object for failure in CSV content loading */
+  public record CSVErrorResponse(String response_type, Map<String, Object> responseMap) {
+    public CSVErrorResponse(Map<String, Object> responseMap) {
+      this("error", responseMap);
+    }
+
+    String serialize() {
+      Moshi moshi = new Moshi.Builder().build();
+      return moshi.adapter(CSVErrorResponse.class).toJson(this);
+    }
+  }
 }
