@@ -58,10 +58,11 @@ public class CsvParser<T> {
       line = reader.readLine();
     }
     if (!malformedRows.isEmpty()) {
-      System.out.println("The following rows are malformed and are not searchable:");
-      for (String row : malformedRows) {
-        System.out.println(row);
-      }
+//      System.out.println("The following rows are malformed and are not searchable:");
+//      for (String row : malformedRows) {
+//        System.out.println(row);
+//      }
+      //If malformed rows are desired, new functionality needs to be added to deal
     }
     return parsedData;
   }

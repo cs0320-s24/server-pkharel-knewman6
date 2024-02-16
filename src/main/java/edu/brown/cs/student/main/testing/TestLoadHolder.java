@@ -19,9 +19,13 @@ public class TestLoadHolder {
     String testPath = "path/to/test.csv";
     csvHolder.loadCSV(testPath);
     Assert.assertEquals(testPath, csvHolder.getCSVFilePath());
+    String newTestPath = "different_path/to/test.csv";
+    csvHolder.loadCSV(newTestPath);
+    Assert.assertEquals(newTestPath, csvHolder.getCSVFilePath());
+    Assert.assertNotEquals(testPath, csvHolder.getCSVFilePath());
   }
 
-  //    @Test(expected = IllegalStateException.class)
+//  @Test(expected = IllegalStateException.class)
   public void testGetCSVFilePathWithoutLoading() {
     CSVHolder csvHolder = CSVHolder.getInstance();
     csvHolder.getCSVFilePath();

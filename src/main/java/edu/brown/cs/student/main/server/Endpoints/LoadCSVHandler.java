@@ -14,7 +14,7 @@ public class LoadCSVHandler implements Route {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
-    String filePath = request.queryParams("file_path");
+    String filePath = request.queryParams("filepath");
     Map<String, Object> responseMap = new HashMap<>();
 
     if (filePath == null || filePath.isEmpty()) {
