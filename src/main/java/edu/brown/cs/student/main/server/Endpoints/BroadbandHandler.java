@@ -72,7 +72,6 @@ public class BroadbandHandler implements Route {
 
     String stateName = request.queryParams("state");
     String countyName = request.queryParams("county");
-    
     responseMap.put("state", stateName);
     responseMap.put("county", countyName);
 

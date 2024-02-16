@@ -30,7 +30,7 @@ public class SearchCSVHandler implements Route {
     String columnID = request.queryParams("column");
     String hasHeaders =
         request.queryParams(
-            "headers");
+            "headers"); // defaults to false if the input is null or not a boolean value
     Boolean headers = this.convertToBoolean(hasHeaders);
 
     if (searchQuery == null || columnID == null) {
@@ -45,17 +45,13 @@ public class SearchCSVHandler implements Route {
 
       if (csvFilePath != null && !csvFilePath.isEmpty()) {
         Search search = new Search(csvFilePath, searchQuery, columnID, headers);
-        Type listOfListsType = Types.newParameterizedType(List.class, List.class, String.class);
-        JsonAdapter<List<List<String>>> listJsonAdapter = moshi.adapter(listOfListsType);
-
         List<List<String>> searchResults = search.searchFor();
-        String searchResultsString = listJsonAdapter.toJson(searchResults);
 
         responseMap.put("result", "success");
         responseMap.put("query", searchQuery);
         responseMap.put("column", columnID);
         responseMap.put("headers", headers.toString());
-        responseMap.put("data", searchResultsString);
+        responseMap.put("data", searchResults);
         response.status(200);
       } else {
         responseMap.put("result", "error_datasource");

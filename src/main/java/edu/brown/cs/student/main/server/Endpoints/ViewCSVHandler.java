@@ -2,10 +2,8 @@ package edu.brown.cs.student.main.server.Endpoints;
 
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import com.squareup.moshi.Types;
 import edu.brown.cs.student.main.server.CSVHolder;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.ArrayList;
@@ -33,12 +31,9 @@ public class ViewCSVHandler implements Route {
         response.status(400);
         return new CSVErrorResponse(responseMap).serialize();
       } else {
-        Moshi moshi = new Moshi.Builder().build();
-        Type listOfListsType = Types.newParameterizedType(List.class, List.class, String.class);
-        JsonAdapter<List<List<String>>> listJsonAdapter = moshi.adapter(listOfListsType);
-
         List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
         List<List<String>> jsonData = new ArrayList<>();
+
         for (String line : csvLines) {
           List<String> row = new ArrayList<>();
           String[] cells = line.split(",");
@@ -47,12 +42,9 @@ public class ViewCSVHandler implements Route {
           }
           jsonData.add(row);
         }
-
-        String jsonDataString = listJsonAdapter.toJson(jsonData); // Serialize the list of lists into a JSON string
-
         responseMap.put("result", "success");
         responseMap.put("message", "CSV content loaded successfully.");
-        responseMap.put("data", jsonDataString); // Set the serialized string as the value for "data"
+        responseMap.put("data", jsonData);
         response.status(200);
         return new CSVSuccessResponse(responseMap).serialize();
       }
@@ -73,7 +65,7 @@ public class ViewCSVHandler implements Route {
     String serialize() {
       try {
         Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<CSVSuccessResponse> adapter = moshi.adapter(CSVSuccessResponse.class);
+        JsonAdapter<CSVSuccessResponse> adapter = moshi.adapter(CSVSuccessResponse.class,String.class,Integer.class);
         return adapter.toJson(this);
       } catch (Exception e) {
         e.printStackTrace();
