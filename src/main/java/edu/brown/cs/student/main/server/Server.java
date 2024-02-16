@@ -2,7 +2,7 @@ package edu.brown.cs.student.main.server;
 
 import static spark.Spark.after;
 
-import edu.brown.cs.student.main.server.Endpoints.BroadbandHandler;
+import edu.brown.cs.student.main.server.Endpoints.broadband.BroadbandHandler;
 import edu.brown.cs.student.main.server.Endpoints.LoadCSVHandler;
 import edu.brown.cs.student.main.server.Endpoints.SearchCSVHandler;
 import edu.brown.cs.student.main.server.Endpoints.ViewCSVHandler;

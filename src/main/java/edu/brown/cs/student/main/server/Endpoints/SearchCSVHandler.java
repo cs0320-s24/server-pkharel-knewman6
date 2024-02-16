@@ -32,6 +32,7 @@ public class SearchCSVHandler implements Route {
         request.queryParams(
             "headers"); // defaults to false if the input is null or not a boolean value
     Boolean headers = this.convertToBoolean(hasHeaders);
+    responseMap.put("Parameters", "Query-" + searchQuery + ", Column Name-" + columnID + ", Headers-" + headers);
 
     if (searchQuery == null || columnID == null) {
       responseMap.put("result", "error_bad_request");
@@ -42,15 +43,10 @@ public class SearchCSVHandler implements Route {
 
     try {
       String csvFilePath = CSVHolder.getInstance().getCSVFilePath();
-
       if (csvFilePath != null && !csvFilePath.isEmpty()) {
         Search search = new Search(csvFilePath, searchQuery, columnID, headers);
         List<List<String>> searchResults = search.searchFor();
-
         responseMap.put("result", "success");
-        responseMap.put("query", searchQuery);
-        responseMap.put("column", columnID);
-        responseMap.put("headers", headers.toString());
         responseMap.put("data", searchResults);
         response.status(200);
       } else {
@@ -61,11 +57,12 @@ public class SearchCSVHandler implements Route {
     } catch (IllegalStateException e) {
       responseMap.put("result", "error_datasource");
       responseMap.put("message", e.getMessage());
+      response.status(400);
     } catch (Exception e) {
       responseMap.put("result", "error_bad_request");
       responseMap.put("message", e.getMessage());
       response.status(500);
     }
-    return adapter.toJson(responseMap);
+    return adapter.toJson(responseMap).replace("\\\"","");
   }
 }

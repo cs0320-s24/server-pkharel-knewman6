@@ -2,6 +2,8 @@ package edu.brown.cs.student.main.server.Endpoints;
 
 import edu.brown.cs.student.main.server.CSVHolder;
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.Map;
 import spark.Request;
@@ -22,6 +24,19 @@ public class LoadCSVHandler implements Route {
       return responseMap;
     }
 
+    // Normalize the provided file path to avoid directory traversal vulnerabilities
+    Path normalizedFilePath = Paths.get(filePath).normalize();
+    String normalizedFilePathStr = normalizedFilePath.toString();
+
+    // Check if the normalized file path string contains the allowed directory
+    String allowedDirectory = "edu/brown/cs/student/main/data";
+    if (!normalizedFilePathStr.contains(allowedDirectory)) {
+      response.status(400);
+      responseMap.put("result", "error");
+      responseMap.put("message", "File is not within the allowed directory");
+      return responseMap;
+    }
+
     File file = new File(filePath);
     if (!file.exists() || file.isDirectory()) {
       response.status(400);
@@ -33,7 +48,7 @@ public class LoadCSVHandler implements Route {
     CSVHolder.getInstance().loadCSV(filePath);
     response.status(200); // HTTP 200 OK
     responseMap.put("result", "success");
-    responseMap.put("message", "CSV file path loaded successfully");
+    responseMap.put("message", "CSV file loaded successfully");
 
     return responseMap;
   }
