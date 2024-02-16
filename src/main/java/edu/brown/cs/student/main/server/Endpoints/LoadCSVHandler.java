@@ -14,6 +14,7 @@ public class LoadCSVHandler implements Route {
 
   @Override
   public Object handle(Request request, Response response) throws Exception {
+    System.out.println(request.toString());
     String filePath = request.queryParams("filepath");
     Map<String, Object> responseMap = new HashMap<>();
 
@@ -23,13 +24,10 @@ public class LoadCSVHandler implements Route {
       responseMap.put("message", "No file path provided");
       return responseMap;
     }
-
-    // Normalize the provided file path to avoid directory traversal vulnerabilities
     Path normalizedFilePath = Paths.get(filePath).normalize();
     String normalizedFilePathStr = normalizedFilePath.toString();
-
-    // Check if the normalized file path string contains the allowed directory
     String allowedDirectory = "edu/brown/cs/student/main/data";
+    responseMap.put("filepath", filePath);
     if (!normalizedFilePathStr.contains(allowedDirectory)) {
       response.status(400);
       responseMap.put("result", "error");
@@ -46,7 +44,7 @@ public class LoadCSVHandler implements Route {
     }
 
     CSVHolder.getInstance().loadCSV(filePath);
-    response.status(200); // HTTP 200 OK
+    response.status(200);
     responseMap.put("result", "success");
     responseMap.put("message", "CSV file loaded successfully");
 

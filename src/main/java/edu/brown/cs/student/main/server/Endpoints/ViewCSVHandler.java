@@ -26,10 +26,10 @@ public class ViewCSVHandler implements Route {
       String csvFilePath = csvHolder.getCSVFilePath();
 
       if (csvFilePath == null || csvFilePath.isEmpty()) {
-        responseMap.put("result", "error");
+        responseMap.put("result", "error_datasource");
         responseMap.put("message", "No CSV file is currently loaded!");
         response.status(400);
-        return new CSVErrorResponse(responseMap).serialize();
+        return new ErrorResponse(responseMap).serialize();
       } else {
         List<String> csvLines = Files.readAllLines(Paths.get(csvFilePath));
         List<List<String>> jsonData = new ArrayList<>();
@@ -46,26 +46,26 @@ public class ViewCSVHandler implements Route {
         responseMap.put("message", "CSV content loaded successfully.");
         responseMap.put("data", jsonData);
         response.status(200);
-        return new CSVSuccessResponse(responseMap).serialize();
+        return new SuccessResponse(responseMap).serialize();
       }
     } catch (IOException | IllegalStateException e) {
-      responseMap.put("result", "error");
+      responseMap.put("result", "error_bad_request");
       responseMap.put("message", e.getMessage());
       response.status(500);
-      return new CSVErrorResponse(responseMap).serialize();
+      return new ErrorResponse(responseMap).serialize();
     }
   }
 
   /** Response object for successful CSV content loading */
-  public record CSVSuccessResponse(String response_type, Map<String, Object> responseMap) {
-    public CSVSuccessResponse(Map<String, Object> responseMap) {
+  public record SuccessResponse(String response_type, Map<String, Object> responseMap) {
+    public SuccessResponse(Map<String, Object> responseMap) {
       this("success", responseMap);
     }
 
     String serialize() {
       try {
         Moshi moshi = new Moshi.Builder().build();
-        JsonAdapter<CSVSuccessResponse> adapter = moshi.adapter(CSVSuccessResponse.class);
+        JsonAdapter<SuccessResponse> adapter = moshi.adapter(SuccessResponse.class);
         return adapter.toJson(this).replace("\\\"", "") ;
       } catch (Exception e) {
         e.printStackTrace();
@@ -75,14 +75,14 @@ public class ViewCSVHandler implements Route {
   }
 
   /** Response object for failure in CSV content loading */
-  public record CSVErrorResponse(String response_type, Map<String, Object> responseMap) {
-    public CSVErrorResponse(Map<String, Object> responseMap) {
+  public record ErrorResponse(String response_type, Map<String, Object> responseMap) {
+    public ErrorResponse(Map<String, Object> responseMap) {
       this("error", responseMap);
     }
 
     String serialize() {
       Moshi moshi = new Moshi.Builder().build();
-      return moshi.adapter(CSVErrorResponse.class).toJson(this);
+      return moshi.adapter(ErrorResponse.class).toJson(this);
     }
   }
 }

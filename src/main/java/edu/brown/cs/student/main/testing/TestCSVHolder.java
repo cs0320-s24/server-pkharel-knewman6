@@ -1,10 +1,12 @@
 package edu.brown.cs.student.main.testing;
 
 import edu.brown.cs.student.main.server.CSVHolder;
-import org.junit.jupiter.api.Test;
+import org.testng.annotations.Test;
 import org.testng.Assert;
 
-public class TestLoadHolder {
+import static org.junit.jupiter.api.Assertions.*;
+
+public class TestCSVHolder {
 
   @Test
   public void testSingletonInstance() {
@@ -25,10 +27,10 @@ public class TestLoadHolder {
     Assert.assertNotEquals(testPath, csvHolder.getCSVFilePath());
   }
 
-//  @Test(expected = IllegalStateException.class)
+  @Test
   public void testGetCSVFilePathWithoutLoading() {
     CSVHolder csvHolder = CSVHolder.getInstance();
-    csvHolder.getCSVFilePath();
+    IllegalStateException thrown = assertThrows(IllegalStateException.class, csvHolder::getCSVFilePath);
   }
 
   @Test
@@ -39,4 +41,18 @@ public class TestLoadHolder {
     csvHolder.loadCSV(testPath);
     Assert.assertTrue(csvHolder.isCSVLoaded());
   }
+
+  @Test
+  public void testLoadCSVWithNullPath() {
+    CSVHolder csvHolder = CSVHolder.getInstance();
+    Exception exception = assertThrows(NullPointerException.class, () -> csvHolder.loadCSV(null), "Expected loadCSV(null) to throw NullPointerException");
+    assertEquals("filepath cannot be null", exception.getMessage());
+  }
+
+  @Test
+  public void testIllegalFileAccess(){
+
+  }
+
+
 }

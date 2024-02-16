@@ -15,6 +15,9 @@ public class CSVHolder {
   }
 
   public void loadCSV(String filePath) {
+    if(filePath == null){
+      throw new NullPointerException("filepath cannot be null");
+    }
     this.csvFilePath = filePath;
     this.isCSVLoaded = true;
   }
@@ -24,6 +27,11 @@ public class CSVHolder {
       throw new IllegalStateException("No CSV file is currently loaded");
     }
     return csvFilePath;
+  }
+
+  public void unloadCSV(){
+    this.csvFilePath = null;
+    this.isCSVLoaded = false;
   }
 
   public boolean isCSVLoaded() {
