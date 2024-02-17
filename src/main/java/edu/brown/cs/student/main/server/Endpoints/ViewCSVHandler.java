@@ -14,8 +14,22 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+/**
+ * Handles requests to view the content of the currently loaded CSV file.
+ * This class reads the CSV file specified by the CSVHolder's file path,
+ * converts its contents into a JSON format, and returns it as a response.
+ */
 public class ViewCSVHandler implements Route {
 
+  /**
+   * Processes the request to view the currently loaded CSV file. Validates
+   * that a CSV file is loaded and then reads its contents, returning them
+   * as a structured JSON response.
+   *
+   * @param request the Spark request object.
+   * @param response the Spark response object, used to set the response metadata.
+   * @return A JSON string representing the CSV content or an error message.
+   */
   @Override
   public Object handle(Request request, Response response) {
     response.type("application/json");
@@ -62,6 +76,11 @@ public class ViewCSVHandler implements Route {
       this("success", responseMap);
     }
 
+    /**
+     * method to serialize the output for the viewcsv, returning structured output
+     *
+     * @return serialized Json String
+     */
     String serialize() {
       try {
         Moshi moshi = new Moshi.Builder().build();
@@ -80,6 +99,11 @@ public class ViewCSVHandler implements Route {
       this("error", responseMap);
     }
 
+    /**
+     * method to serialize the output for the viewcsv, returning structured output
+     *
+     * @return serialized Json String
+     */
     String serialize() {
       Moshi moshi = new Moshi.Builder().build();
       return moshi.adapter(ErrorResponse.class).toJson(this);

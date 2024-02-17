@@ -19,6 +19,12 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+/**
+ * Handles requests to fetch broadband data based on state and county parameters.
+ * This class initializes state codes and sets up a caching mechanism to store
+ * and retrieve broadband data efficiently. It supports handling requests with
+ * or without an injected HttpClient instance for testing or customized HTTP behaviors.
+ */
 public class BroadbandHandler implements Route {
 
   private static final Map<String, String> stateNameToCode = new HashMap<>();
@@ -33,14 +39,32 @@ public class BroadbandHandler implements Route {
     }
   }
 
+  /**
+   * Constructs a BroadbandHandler with a custom HttpClient.
+   * @param httpClient the HttpClient to use for making external API requests.
+   */
   public BroadbandHandler(HttpClient httpClient) {
     this.httpClient = httpClient;
   }
 
+  /**
+   * Default constructor that uses the system's default HttpClient.
+   */
   public BroadbandHandler() {
     this(HttpClient.newHttpClient());
   }
 
+  /**
+   * Processes the incoming request to fetch broadband data for a given state and county.
+   * The response includes the query's date and time and the fetched broadband data,
+   * handling errors as necessary based on the request's validity and whether the API is accessed properly.
+   *
+   * Utilizes the BroadbandHelper helper methods
+   *
+   * @param request the Spark request object, containing query parameters.
+   * @param response the Spark response object, used to set response metadata.
+   * @return A JSON string representing the response to the client.
+   */
   @Override
   public Object handle(Request request, Response response) {
     response.type("application/json");

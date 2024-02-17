@@ -10,8 +10,24 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+/**
+ * Handles requests to load a CSV file into the application. Validates the provided file path
+ * to ensure it points to a valid CSV file within an allowed directory. Updates the application's
+ * state to reference the newly loaded CSV file for future operations.
+ */
 public class LoadCSVHandler implements Route {
 
+  /**
+   * Processes the incoming request to load a CSV file. Validates the file path against
+   * specific criteria, including the existence of the file, its location within our allowed
+   * directory, and the nature (not being a directory itself). Assuming there is successful validation,
+   * handle() updates the central CSVHolder instance to reference the loaded file.
+   *
+   * @param request the Spark request object, containing the 'filepath' query parameter.
+   * @param response the Spark response object, used to set response metadata such as status codes.
+   * @return A map object serialized into JSON, indicating the outcome of the operation.
+   * @throws Exception for any underlying exceptions that occur during file validation or loading.
+   */
   @Override
   public Object handle(Request request, Response response) throws Exception {
     System.out.println(request.toString());

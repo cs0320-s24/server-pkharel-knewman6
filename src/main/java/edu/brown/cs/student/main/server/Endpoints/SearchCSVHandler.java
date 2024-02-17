@@ -13,12 +13,33 @@ import spark.Request;
 import spark.Response;
 import spark.Route;
 
+/**
+ * Handles search requests on the loaded CSV file. Allows users to search for data
+ * within the file based on a specified query, column, and whether the file contains headers.
+ * Responses are formatted in JSON and include the search results or an error message if applicable.
+ */
 public class SearchCSVHandler implements Route {
 
+  /**
+   * Converts a string input to a boolean value. Specifically used to parse the 'headers' parameter.
+   *
+   * @param input the string input representing a boolean value.
+   * @return true if the input is "true", otherwise false.
+   */
   private boolean convertToBoolean(String input) {
     return "true".equals(input);
   }
 
+  /**
+   * Processes the incoming search request and extracts parameters for the search query,
+   * the column to search in, and whether the CSV has headers. Performs the search
+   * and constructs a response indicating success or failure with the corresponding data or
+   * a relevant error message.
+   *
+   * @param request the Spark request object, containing the search parameters.
+   * @param response the Spark response object, used to set response metadata such as content type.
+   * @return A JSON string representing the search results or an error message.
+   */
   @Override
   public Object handle(Request request, Response response) {
     response.type("application/json");

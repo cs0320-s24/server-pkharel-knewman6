@@ -10,8 +10,26 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+
+/**
+ * Provides utility methods to support broadband data fetching operations.
+ * This class includes methods for initializing state codes from an external API,
+ * retrieving state and county codes based on names, and fetching broadband data
+ * for a specific state and county.
+ */
 public class BroadbandHelper {
 
+
+    /**
+     * Initializes a map with state names and their corresponding codes by fetching
+     * data from the external ACS API. This method parses the response and populates
+     * the provided map with state name-code pairs.
+     *
+     * @param mapToPopulate the map to populate with state name-code pairs.
+     * @throws URISyntaxException if the URI for the API request is incorrect.
+     * @throws IOException if an I/O exception occurs during the API request.
+     * @throws InterruptedException if the operation is interrupted.
+     */
     public static void initializeStateCodes(Map<String, String> mapToPopulate)
             throws URISyntaxException, IOException, InterruptedException {
         String stateDirectoryUri = "https://api.census.gov/data/2010/dec/sf1?get=NAME&for=state:*";
@@ -33,6 +51,15 @@ public class BroadbandHelper {
         }
     }
 
+
+    /**
+     * Retrieves the code for a given state name from a map of state name-code pairs.
+     *
+     * @param stateName the name of the state.
+     * @param mapOfCodes the map containing state name-code pairs.
+     * @return The code of the state.
+     * @throws IllegalArgumentException if the state name is not found in the map.
+     */
     public static String getStateCode(String stateName, Map<String, String> mapOfCodes)
             throws IllegalArgumentException {
         if (stateName.equals("*")) {
@@ -45,6 +72,19 @@ public class BroadbandHelper {
         return stateCode;
     }
 
+    /**
+     * Retrieves the code for a given county name within a state by making an API request.
+     * This method matches the county name against the API response to find the corresponding code.
+     *
+     * @param stateCode the state code where the county is located.
+     * @param countyName the name of the county.
+     * @param client the HttpClient used to make the API request.
+     * @return The code of the county.
+     * @throws IOException if an I/O exception occurs during the API request.
+     * @throws InterruptedException if the operation is interrupted.
+     * @throws URISyntaxException if the URI for the API request is incorrect.
+     * @throws IllegalArgumentException if the county name is not found.
+     */
     public static String getCountyCode(String stateCode, String countyName, HttpClient client)
             throws IOException, InterruptedException, URISyntaxException, IllegalArgumentException {
         if (countyName.equals("*")) {
@@ -72,6 +112,20 @@ public class BroadbandHelper {
         throw new IllegalArgumentException("County name not found: " + countyName);
     }
 
+
+    /**
+     * Fetches broadband data for a specific county within a state by making an API request.
+     * This method constructs a request to an external API with state and county codes and
+     * returns the API response. Only called if the data is not in the cache
+     *
+     * @param stateCode the state code.
+     * @param county the county code.
+     * @param client the HttpClient used to make the API request.
+     * @return The API response containing broadband data.
+     * @throws URISyntaxException if the URI for the API request is incorrect.
+     * @throws IOException if an I/O exception occurs during the API request.
+     * @throws InterruptedException if the operation is interrupted.
+     */
     public static String fetchDataFromApi(String stateCode, String county, HttpClient client)
             throws URISyntaxException, IOException, InterruptedException {
         String baseUri = "https://api.census.gov/data/2021/acs/acs1/subject/variables";

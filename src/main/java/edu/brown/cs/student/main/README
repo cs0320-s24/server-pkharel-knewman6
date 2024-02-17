@@ -1,16 +1,49 @@
-# CSV
+# Server
 
 ## Team
+- *Kole*: joint effort across the project
+- *Prasoon*: joint effort across the project
 
 
 ## Repository Link
-
+https://github.com/cs0320-s24/server-pkharel-knewman6
 
 ## Design Choices
+- **Architecture**: We used 4 handler classes, with a few external classes. Each handler class was
+mostly responsible just for its own handle method, relying on other helper classes to perform
+necessary operations. The two helper classes were CSVHolder and BroadbandHelper. CSVHolder is a singleton
+class responsible for storing the information from LoadCSVHandler and making it available to the other 2
+CSV relevant handlers. It also has logic to check that a csv is loaded. BroadbandHandler was responsible for
+populating the initial state name to code array as well as converting state and county names to codes
+for the ultimate URL API call. It also had the ability to query directly t the API, though this method was
+only used when the query was not already stored in the cache.
+- **Libraries and Dependencies**: The only external libraries we used were Spark and Google Guava. Spark
+was required to make the server functionality work, and Google Guava seemed the most straightforward choice
+for caching implementation.
+- **Data Management**: The main data storage that we have is caching. This is enabled through the use of Google
+Guava. We set the storage time to be 10 minutes with a maximum of 10 values in the cache. This can be updated via
+the constructor of BroadbandCache, which takes in arguments for amount of time units, what unit of time, and
+the maximum number of elements in the cache.
 
-### Specific design choices
+### Specific Design Choices
+- We chose to condense many of our classes rather than spread them across multiple files. This was mainly due
+to an ease of understanding for us. Having the functionality more concentrated and less reliant on a large
+web of files meant we were able to track down bugs more efficiently and easily fix them. We also have a caching
+class as a design decision, with helper methods inside of it to add and get data from the cache. This makes caching
+very intuitive, similar to adding to a list with automatic removal. The last major design choice we made was to create
+the CSVHolder class, which is an intermediary singleton class responsible for storing the proper filepath for the CSV
+handlers. This was needed to make sure that after a CSV was loaded, it was then accessible to the rest of the CSVHandler
+classes.
 
 ## Errors and Bugs
+- The main bug we are currently facing is an inability to run our tests due to a "failure to connect", message
+when running the mock server in CSVs. This is our only known bug.
 
 ## Tests
-### **Unit Tests**:
+### Unit Tests
+- *Explanation of the unit testing approach, including frameworks and tools used.*
+- *How to run the tests.*
+- *Summary of test coverage and results.*
+
+### Integration Tests
+- *Description of integration testing strategy and execution.*
