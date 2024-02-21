@@ -4,7 +4,6 @@
 - *Kole*: joint effort across the project
 - *Prasoon*: joint effort across the project
 
-
 ## Repository Link
 https://github.com/cs0320-s24/server-pkharel-knewman6
 
@@ -16,7 +15,8 @@ class responsible for storing the information from LoadCSVHandler and making it 
 CSV relevant handlers. It also has logic to check that a csv is loaded. BroadbandHandler was responsible for
 populating the initial state name to code array as well as converting state and county names to codes
 for the ultimate URL API call. It also had the ability to query directly t the API, though this method was
-only used when the query was not already stored in the cache.
+only used when the query was not already stored in the cache. Additionally we implemented an interface with
+the broadbandHelper class to allow for data mocking in testing
 - **Libraries and Dependencies**: The only external libraries we used were Spark and Google Guava. Spark
 was required to make the server functionality work, and Google Guava seemed the most straightforward choice
 for caching implementation.
