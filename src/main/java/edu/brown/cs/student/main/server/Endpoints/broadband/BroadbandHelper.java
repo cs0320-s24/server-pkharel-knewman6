@@ -1,11 +1,14 @@
 package edu.brown.cs.student.main.server.Endpoints.broadband;
 
+import edu.brown.cs.student.main.server.Caching.BroadbandCache;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -17,7 +20,8 @@ import java.util.regex.Pattern;
  * retrieving state and county codes based on names, and fetching broadband data
  * for a specific state and county.
  */
-public class BroadbandHelper {
+public class BroadbandHelper implements IBroadbandHelper{
+    private Map<String, String> stateCodeMap = new HashMap<>();
 
 
     /**
@@ -25,12 +29,11 @@ public class BroadbandHelper {
      * data from the external ACS API. This method parses the response and populates
      * the provided map with state name-code pairs.
      *
-     * @param mapToPopulate the map to populate with state name-code pairs.
      * @throws URISyntaxException if the URI for the API request is incorrect.
      * @throws IOException if an I/O exception occurs during the API request.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public static void initializeStateCodes(Map<String, String> mapToPopulate)
+    public void initializeStateCodes()
             throws URISyntaxException, IOException, InterruptedException {
         String stateDirectoryUri = "https://api.census.gov/data/2010/dec/sf1?get=NAME&for=state:*";
         HttpRequest stateRequest =
@@ -47,7 +50,7 @@ public class BroadbandHelper {
         while (matcher.find()) {
             String stateName = matcher.group(1).replace("\"", "");
             String stateCode = matcher.group(2).replace("\"", "");
-            mapToPopulate.put(stateName, stateCode);
+            this.stateCodeMap.put(stateName, stateCode);
         }
     }
 
@@ -56,16 +59,15 @@ public class BroadbandHelper {
      * Retrieves the code for a given state name from a map of state name-code pairs.
      *
      * @param stateName the name of the state.
-     * @param mapOfCodes the map containing state name-code pairs.
      * @return The code of the state.
      * @throws IllegalArgumentException if the state name is not found in the map.
      */
-    public static String getStateCode(String stateName, Map<String, String> mapOfCodes)
+    public String getStateCode(String stateName)
             throws IllegalArgumentException {
         if (stateName.equals("*")) {
             return "*";
         }
-        String stateCode = mapOfCodes.get(stateName);
+        String stateCode = this.stateCodeMap.get(stateName);
         if (stateCode == null) {
             throw new IllegalArgumentException("State name not found: " + stateName);
         }
@@ -85,7 +87,7 @@ public class BroadbandHelper {
      * @throws URISyntaxException if the URI for the API request is incorrect.
      * @throws IllegalArgumentException if the county name is not found.
      */
-    public static String getCountyCode(String stateCode, String countyName, HttpClient client)
+    public String getCountyCode(String stateCode, String countyName, HttpClient client)
             throws IOException, InterruptedException, URISyntaxException, IllegalArgumentException {
         if (countyName.equals("*")) {
             return "*";
@@ -126,7 +128,7 @@ public class BroadbandHelper {
      * @throws IOException if an I/O exception occurs during the API request.
      * @throws InterruptedException if the operation is interrupted.
      */
-    public static String fetchDataFromApi(String stateCode, String county, HttpClient client)
+    public String fetchDataFromApi(String stateCode, String county, HttpClient client)
             throws URISyntaxException, IOException, InterruptedException {
         String baseUri = "https://api.census.gov/data/2021/acs/acs1/subject/variables";
         String queryParam = "?get=NAME,S2802_C03_022E&for=county:" + county + "&in=state:" + stateCode;
@@ -135,4 +137,32 @@ public class BroadbandHelper {
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
         return response.body();
     }
+
+
+    @Override
+    public Map<String, Object> processBroadbandRequest(String stateName, String countyName, HttpClient httpClient, BroadbandCache cacher) throws Exception {
+        Map<String, Object> responseMap = new HashMap<>();
+
+        if (stateName == null || countyName == null || stateName.isEmpty() || countyName.isEmpty()) {
+            throw new IllegalArgumentException("State and county parameters are required.");
+        }
+
+        String stateCode = getStateCode(stateName);
+        String countyCode = getCountyCode(stateCode, countyName, httpClient);
+        String broadbandJson = cacher.getData(stateCode, countyCode);
+
+        if (broadbandJson == null) {
+            broadbandJson = fetchDataFromApi(stateCode, countyCode, httpClient);
+            cacher.putData(stateCode, countyCode, broadbandJson);
+        }
+
+        responseMap.put("state", stateName);
+        responseMap.put("county", countyName);
+        responseMap.put("result", "success");
+        responseMap.put("data", broadbandJson);
+
+        return responseMap;
+    }
+
 }
+

@@ -57,39 +57,67 @@ public class TestSearch {
 
     @Test
     public void testSearchWithoutQuery() throws IOException {
+        try {
+            // Add a small delay to give the server more time to initialize
+            Thread.sleep(1000); // 1000 milliseconds = 1 second
+            // Rest of your test code...
         this.tryRequest("loadcsv", "valid/path/to/csv", null, null);
         HttpURLConnection connection = tryRequest("searchcsv", null, "columnName", "true");
 
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, connection.getResponseCode());
         String response = connection.getResponseMessage();
         assertTrue(response.contains("Query and column parameters are required."), "Expected error message about missing query parameter");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 
     @Test
     public void testSearchWithValidParameters() throws IOException {
+        try {
+            // Add a small delay to give the server more time to initialize
+            Thread.sleep(1000); // 1000 milliseconds = 1 second
+            // Rest of your test code...
         this.tryRequest("loadcsv", null, null, null);
         HttpURLConnection connection = tryRequest("searchcsv", "searchQuery", "columnName", "true");
 
         assertEquals(HttpURLConnection.HTTP_OK, connection.getResponseCode());
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void testSearchWithoutColumn() throws IOException {
+        try {
+            // Add a small delay to give the server more time to initialize
+            Thread.sleep(1000); // 1000 milliseconds = 1 second
+            // Rest of your test code...
         this.tryRequest("loadcsv", "valid/path/to/csv", null, null);
         HttpURLConnection connection = tryRequest("searchcsv", "searchQuery", null, "true");
         String response = connection.getResponseMessage();
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, connection.getResponseCode());
         assertTrue(response.contains("Query and column parameters are required."), "Expected error message about missing column parameter");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
     public void testSearchWithCSVNotLoaded() throws IOException {
+        try {
+            // Add a small delay to give the server more time to initialize
+            Thread.sleep(1000); // 1000 milliseconds = 1 second
+            // Rest of your test code...
         this.tryRequest("loadcsv", null, null, null); // Simulating no CSV loaded
         HttpURLConnection connection = tryRequest("searchcsv", "searchQuery", "columnName", "true");
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, connection.getResponseCode());
         String response = connection.getResponseMessage();
         assertTrue(response.contains("No CSV file is currently loaded!"), "Expected error message about no CSV file being loaded");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
 

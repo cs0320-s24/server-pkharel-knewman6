@@ -9,8 +9,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -27,13 +25,13 @@ import spark.Route;
  */
 public class BroadbandHandler implements Route {
 
-  private static final Map<String, String> stateNameToCode = new HashMap<>();
   private HttpClient httpClient = HttpClient.newHttpClient();
   private BroadbandCache cacher = new BroadbandCache(10, TimeUnit.MINUTES, 10);
+  private IBroadbandHelper broadbandHelper = new BroadbandHelper();
 
   static {
     try {
-      BroadbandHelper.initializeStateCodes(stateNameToCode);
+      new BroadbandHelper().initializeStateCodes();
     } catch (IOException | InterruptedException | URISyntaxException e) {
       e.printStackTrace();
     }
@@ -41,18 +39,16 @@ public class BroadbandHandler implements Route {
 
   /**
    * Constructs a BroadbandHandler with a custom HttpClient.
-   * @param httpClient the HttpClient to use for making external API requests.
+   * @param handler the interface BroadbandHelper to use for mocking external API requests.
    */
-  public BroadbandHandler(HttpClient httpClient) {
-    this.httpClient = httpClient;
+  public BroadbandHandler(IBroadbandHelper handler) {
+    this.broadbandHelper = handler;
   }
 
   /**
    * Default constructor that uses the system's default HttpClient.
    */
-  public BroadbandHandler() {
-    this(HttpClient.newHttpClient());
-  }
+  public BroadbandHandler() {}
 
   /**
    * Processes the incoming request to fetch broadband data for a given state and county.
@@ -67,49 +63,25 @@ public class BroadbandHandler implements Route {
    */
   @Override
   public Object handle(Request request, Response response) {
-    response.type("application/json");
-
-    LocalDateTime queryDateTime = LocalDateTime.now();
-    DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
-    String formattedDateTime = queryDateTime.format(formatter);
-
     Moshi moshi = new Moshi.Builder().build();
     Type mapStringObject = Types.newParameterizedType(Map.class, String.class, Object.class);
     JsonAdapter<Map<String, Object>> adapter = moshi.adapter(mapStringObject);
-    Map<String, Object> responseMap = new HashMap<>();
-
-    responseMap.put("queryDateTime", formattedDateTime);
 
     String stateName = request.queryParams("state");
     String countyName = request.queryParams("county");
-    responseMap.put("state", stateName);
-    responseMap.put("county", countyName);
-
-    if (stateName == null || countyName == null || stateName.isEmpty() || countyName.isEmpty()) {
-      responseMap.put("result", "error");
-      responseMap.put("message", "State and county parameters are required.");
-      return responseMap;
-    }
-
 
     try {
-      String stateCode = BroadbandHelper.getStateCode(stateName, stateNameToCode);
-      String countyCode = BroadbandHelper.getCountyCode(stateCode, countyName, httpClient);
-      String broadbandJson = cacher.getData(stateCode, countyCode);
-      if (broadbandJson == null) {
-        broadbandJson = BroadbandHelper.fetchDataFromApi(stateCode, countyCode, httpClient);
-        cacher.putData(stateCode, countyCode, broadbandJson);
-      }
-      responseMap.put("result", "success");
-      responseMap.put("data", broadbandJson);
+      Map<String, Object> result = broadbandHelper.processBroadbandRequest(stateName, countyName, httpClient, cacher);
       response.status(200);
+      return adapter.toJson(result);
     } catch (Exception e) {
-      responseMap.put("result", "error");
-      responseMap.put("message", e.getMessage());
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("result", "error");
+      errorResponse.put("message", e.getMessage());
       response.status(500);
+      return adapter.toJson(errorResponse);
     }
-    //BroadbandCache.printCache();
-    return adapter.toJson(responseMap).replace("\\\"","");
   }
+
 
 }

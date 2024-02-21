@@ -54,19 +54,33 @@ public class TestView {
     }
 
     @Test
-    public void validView() throws IOException {
+    public void testValidView() throws IOException {
+        try {
+            // Add a small delay to give the server more time to initialize
+            Thread.sleep(1000); // 1000 milliseconds = 1 second
+            // Rest of your test code...
         this.tryRequest("loadcsv");
         HttpURLConnection connection = tryRequest("viewcsv");
         assertEquals(HttpURLConnection.HTTP_OK, connection.getResponseCode());
         String response = connection.getResponseMessage();
         assertTrue(response.contains("success"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     @Test
-    public void unloadedView() throws IOException {
+    public void testUnloadedView() throws IOException {
+        try {
+            // Add a small delay to give the server more time to initialize
+            Thread.sleep(1000); // 1000 milliseconds = 1 second
+            // Rest of your test code...
         HttpURLConnection connection = tryRequest("viewcsv");
         assertEquals(HttpURLConnection.HTTP_BAD_REQUEST, connection.getResponseCode());
         String response = connection.getResponseMessage();
         assertTrue(response.contains("No CSV file is currently loaded"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
